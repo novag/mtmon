@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root_dir="$(git rev-parse --show-toplevel)"
+cd "$repo_root_dir"
+
+# Gather staged files (Added, Copied, Modified, Renamed)
+mapfile -d "" -t staged_files < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+backend_py_files=()
+frontend_prettier_files=()
+frontend_eslint_files=()
+
+for f in "${staged_files[@]}"; do
+  case "$f" in
+    backend/*)
+      case "$f" in
+        *.py|*.pyi)
+          # strip leading backend/
+          backend_py_files+=("${f#backend/}")
+          ;;
+      esac
+      ;;
+    frontend/*)
+      # For Prettier, pass all changed files under frontend; unknowns are ignored
+      frontend_prettier_files+=("${f#frontend/}")
+      # For ESLint, only JS/TS files
+      case "$f" in
+        *.js|*.jsx|*.mjs|*.cjs|*.ts|*.tsx)
+          frontend_eslint_files+=("${f#frontend/}")
+          ;;
+      esac
+      ;;
+  esac
+done
+
+# Backend: Ruff fix + format only on changed Python files
+if [ ${#backend_py_files[@]} -gt 0 ]; then
+  echo "[pre-commit] Ruff on changed Python files in backend/"
+  (
+    cd backend
+    if command -v uv >/dev/null 2>&1; then
+      uv run ruff check --fix "${backend_py_files[@]}"
+      uv run ruff format "${backend_py_files[@]}"
+    else
+      if command -v ruff >/dev/null 2>&1; then
+        ruff check --fix "${backend_py_files[@]}"
+        ruff format "${backend_py_files[@]}"
+      else
+        echo "Ruff not found. Install via uv or pip." >&2
+        exit 1
+      fi
+    fi
+  )
+fi
+
+# Frontend: Prettier on changed files, ESLint only on changed JS/TS files
+if [ ${#frontend_prettier_files[@]} -gt 0 ] || [ ${#frontend_eslint_files[@]} -gt 0 ]; then
+  echo "[pre-commit] Prettier/ESLint on changed files in frontend/"
+  (
+    cd frontend
+    if ! command -v pnpm >/dev/null 2>&1; then
+      echo "pnpm not found. Install pnpm to proceed." >&2
+      exit 1
+    fi
+    if [ ${#frontend_prettier_files[@]} -gt 0 ]; then
+      # Use project script to ensure consistent options
+      pnpm -s run format -- "${frontend_prettier_files[@]}"
+    fi
+    if [ ${#frontend_eslint_files[@]} -gt 0 ]; then
+      # Call eslint directly to restrict to changed files (script uses .)
+      pnpm -s exec eslint --no-warn-ignored --report-unused-disable-directives --max-warnings 0 "${frontend_eslint_files[@]}"
+    fi
+  )
+fi
+
+# Abort commit if formatters/linters modified any of the originally staged files.
+if [ ${#staged_files[@]} -gt 0 ]; then
+  mapfile -d "" -t modified_in_staged < <(git diff --name-only -z -- "${staged_files[@]}")
+  if [ ${#modified_in_staged[@]} -gt 0 ]; then
+    echo "[pre-commit] The following staged files were modified by the hook:"
+    for f in "${modified_in_staged[@]}"; do
+      echo "  - $f"
+    done
+    echo
+    echo "Please review the changes, stage them (git add), and re-run the commit."
+    echo "Aborting commit."
+    exit 1
+  fi
+fi
