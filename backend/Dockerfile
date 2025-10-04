@@ -12,4 +12,8 @@ COPY . /opt/mtmon/
 # Ensure the project's virtual environment is on PATH
 ENV PATH="/opt/mtmon/.venv/bin:$PATH"
 
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Add entrypoint to apply migrations before starting the app
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

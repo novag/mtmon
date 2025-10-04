@@ -12,7 +12,7 @@ from meshtastic.protobuf import portnums_pb2
 from sqlalchemy import and_, func
 from sqlalchemy.future import select
 
-from backend.db import async_session, init_db
+from backend.db import async_session
 from backend.models import (
     DirectLink,
     Gateway,
@@ -49,7 +49,6 @@ packet_handler = PacketHandler(
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan manager to start and stop background tasks."""
-    await init_db()
     loop = asyncio.get_event_loop()
     mqtt_task = loop.create_task(packet_handler.listen(root_topic=ROOT_TOPIC))
 
