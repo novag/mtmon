@@ -12,8 +12,14 @@ if [ -z "$ALEMBIC_SQLALCHEMY_URL" ]; then
   export ALEMBIC_SQLALCHEMY_URL="sqlite:////data/nodes.db"
 fi
 
+# Move to project root
+cd /opt/mtmon/
+
 # Apply migrations to latest
 alembic upgrade head
+
+# Move to backend folder
+cd backend/
 
 # Start the application
 exec uvicorn backend.main:app --host 0.0.0.0 --port 8000

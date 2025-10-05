@@ -1,0 +1,10 @@
+.venv
+.ruff_cache
+__pycache__/
+*.pyc
+data/
+*.db
+*.sqlite
+.git
+tests/
+
