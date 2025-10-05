@@ -18,7 +18,7 @@ uv sync
 uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 - API docs: http://localhost:8000/docs
-- The database is created at `data/nodes.db` inside the container or working directory; when running locally, ensure that path exists or adjust it in `backend/db.py`.
+- The default database path is `data/nodes.db` relative to where you run the app. Ensure that directory exists or set `DB_PATH`.
 
 Alternatively, using the FastAPI CLI:
 ```bash
@@ -37,8 +37,7 @@ The backend reads configuration from environment variables with sensible default
 - CORS (env)
   - `CORS_ALLOW_ORIGINS` (comma-separated). Default: `*`
 - Database
-  - URL: `sqlite+aiosqlite:////data/nodes.db` (see `backend/backend/db.py`)
-  - WAL mode enabled
+  - Default: `DB_PATH=data/nodes.db` (relative path). WAL mode enabled.
 
 Example (local):
 ```bash

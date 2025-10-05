@@ -41,7 +41,7 @@ uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
 
 - API docs: `http://localhost:8000/docs`
-- Default DB path: `data/nodes.db` (ensure the directory exists locally)
+- Default DB path: `data/nodes.db` (relative to where you run the app)
 
 Environment variables (defaults shown):
 
@@ -52,6 +52,7 @@ export MQTT_USERNAME=mt
 export MQTT_PASSWORD=""
 export ROOT_TOPIC=msh/EU_868/2/e/LongFast/
 export CORS_ALLOW_ORIGINS="*"
+export DB_PATH="data/nodes.db"
 ```
 
 Container image (backend): A `Dockerfile` is available under `backend/` for running the API service.

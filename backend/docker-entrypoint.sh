@@ -4,13 +4,10 @@ set -e
 # Move to backend folder containing Alembic config
 cd /opt/mtmon/backend
 
-# Ensure data directory exists (works for default sqlite path in container)
-mkdir -p /data || true
-
-# Use override if provided, else env.py derives from backend.db
-if [ -z "$ALEMBIC_SQLALCHEMY_URL" ]; then
-  export ALEMBIC_SQLALCHEMY_URL="sqlite:////data/nodes.db"
-fi
+# Ensure database directory exists, based on DB_PATH (default: data/nodes.db)
+DB_PATH_EFFECTIVE="${DB_PATH:-data/nodes.db}"
+DB_DIR="$(dirname "$DB_PATH_EFFECTIVE")"
+mkdir -p "$DB_DIR" || true
 
 # Move to project root
 cd /opt/mtmon/

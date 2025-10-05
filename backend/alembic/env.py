@@ -1,6 +1,5 @@
 """Alembic migration environment for the backend database."""
 
-import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -27,23 +26,17 @@ target_metadata = Base.metadata
 def _resolve_sqlalchemy_url() -> str:
     """Compute a synchronous SQLAlchemy URL for Alembic.
 
-    Priority:
-    1) ALEMBIC_SQLALCHEMY_URL environment variable
-    2) backend.db.DATABASE_URL converted to sync if needed
-    3) fallback to in-memory SQLite
+    Derived solely from backend.db.DATABASE_URL (converted to sync if needed).
+    Fails if not set.
     """
-    env_url = os.getenv("ALEMBIC_SQLALCHEMY_URL")
-    if env_url:
-        return env_url
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is not set; ensure DB_PATH is configured.")
 
-    if DATABASE_URL:
-        url = str(DATABASE_URL)
-        if url.startswith("sqlite+aiosqlite:"):
-            return url.replace("sqlite+aiosqlite:", "sqlite:", 1)
+    url = str(DATABASE_URL)
+    if url.startswith("sqlite+aiosqlite:"):
+        return url.replace("sqlite+aiosqlite:", "sqlite:", 1)
 
-        return url
-
-    return "sqlite:///:memory:"
+    return url
 
 
 def run_migrations_offline() -> None:
