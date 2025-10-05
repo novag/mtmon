@@ -55,6 +55,7 @@ class PacketGatewayLink(Base):
     packet_id = Column(Integer, primary_key=True)
     from_id = Column(Integer, primary_key=True)
     to_id = Column(Integer, primary_key=True)
+    relay_node = Column(Integer, nullable=True)
     gateway_id = Column(Integer, ForeignKey("gateways.id"), primary_key=True)
 
     __table_args__ = (

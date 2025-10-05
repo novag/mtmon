@@ -48,5 +48,6 @@ export interface Packet {
     hop_limit: number;
     rssi: number;
     snr: number;
+    relay_node?: number | null;
   }[];
 }

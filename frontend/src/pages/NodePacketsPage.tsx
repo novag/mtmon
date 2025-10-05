@@ -125,6 +125,37 @@ export default function NodePacketsPage() {
       cell: ({ row }) => <div>{row.getValue("gateway_count")}</div>,
     },
     {
+      accessorKey: "relay_node",
+      accessorFn: (row) => {
+        if (filterMode !== "received" || !selectedNodeId) return null;
+        const receivingHop = row.hops.find(
+          (hop) => hop.gateway_id === selectedNodeId,
+        );
+        return receivingHop?.relay_node ?? null;
+      },
+      header: ({ column }) => {
+        return (
+          <>
+            Relay
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-transparent text-stone-400 hover:text-stone-900"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </>
+        );
+      },
+      cell: ({ row }) => {
+        const value = row.getValue<number | null>("relay_node");
+        return <div>{value == null ? "-" : value.toString(16)}</div>;
+      },
+    },
+    {
       accessorKey: "rssi",
       accessorFn: (row) => {
         if (!row.hops || row.hops.length === 0) return null;

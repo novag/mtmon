@@ -423,6 +423,7 @@ class PacketHandler:
             packet_id=mp.id,
             from_id=from_id,
             to_id=mp.to,
+            relay_node=(mp.relay_node if hasattr(mp, "relay_node") else None),
             length=len(mp.decoded.payload) if mp.HasField("decoded") else -1,
             hop_start=mp.hop_start,
             hop_limit=mp.hop_limit,
@@ -460,6 +461,7 @@ class PacketHandler:
                 hop_limit=gw.hop_limit,
                 rssi=gw.rssi,
                 snr=gw.snr,
+                relay_node=gw.relay_node,
             )
             for gw in packet_gateways.scalars().all()
         ]
@@ -649,6 +651,7 @@ class PacketHandler:
         packet_id: int,
         from_id: int,
         to_id: int,
+        relay_node: int | None,
         length: int,
         hop_start: int,
         hop_limit: int,
@@ -685,6 +688,7 @@ class PacketHandler:
                 packet_id=packet_id,
                 from_id=from_id,
                 to_id=to_id,
+                relay_node=relay_node,
                 gateway_id=gateway_id,
                 seen_at=seen_at,
                 hop_limit=hop_limit,

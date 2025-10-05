@@ -47,6 +47,7 @@ class PacketHopSchema(BaseModel):
     hop_limit: int
     rssi: int
     snr: float
+    relay_node: int | None = None
 
 
 class PacketSchema(BaseModel):
